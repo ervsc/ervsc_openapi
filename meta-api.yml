@@ -1,0 +1,208 @@
+openapi: 3.0.0
+
+info:
+  title: "ERVS Co. Meta Page Preview APIs"
+  description: "This API allows you to quickly retrieve comprehensive metadata about a web page such as the page's associated icons and favicon, open graph meta tags, the number of redirect hops, and more."
+  version: "1.0.0"
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  contact:
+    name: ERVS Co. API Support
+    email: support@ervsoftware.co
+    url: https://www.ervsoftware.co/
+  termsOfService: https://www.ervsoftware.co/apis/terms-of-service/
+
+externalDocs:
+  description: API service documentation site
+  url: https://docs.ervsoftware.co/meta-api
+
+servers:
+  - url: https://meta-api.ervsoftware.co
+    description: Production server
+
+paths:
+  /:
+    get:
+      summary: Authentication check
+      description: Test that auth is working using either server-side or client-side authentication
+      operationId: hello
+      responses:
+        '200':
+          description: A JSON object saying hello
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  time:
+                    type: string
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /unfurl:
+    get:
+      summary: Unfurl web page metadata preview
+      description: Get meta data and OpenGraph information for a given URL
+      operationId: unfurl
+      responses:
+        '200':
+          description: A JSON object with the results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  application_name:
+                    type: string
+                  canonical_url:
+                    type: string
+                  page_description:
+                    type: string
+                  icon_url:
+                    type: string
+                  page_keywords:
+                    type: string
+                  resolved_url:
+                    type: string
+                  open_graph:
+                    type: object
+                    properties:
+                      og:title:
+                        type: string
+                      og:type:
+                        type: string
+                      og:url:
+                        type: string
+                      og:description:
+                        type: string
+                      og:image:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            url:
+                              type: string
+                  page_title:
+                    type: string
+        '400':
+          description: Invalid URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /icons:
+    get:
+      summary: Get icons assoicated with a web page
+      description: List all the icons linked to by a given web page
+      operationId: icons
+      responses:
+        '200':
+          description: A JSON object with the results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  canonical_url:
+                    type: string
+                  icon_url:
+                    type: string
+                  icons:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        rel:
+                          type: string
+                        url:
+                          type: string
+                        height:
+                          type: integer
+                          format: int32
+                        width:
+                          type: integer
+                          format: int32
+        '400':
+          description: Invalid URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  /redirects:
+    get:
+      summary: Get redirects list
+      description: Capture all the redirect "hops" for a given URL
+      operationId: redirects
+      responses:
+        '200':
+          description: A JSON object with the results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  locations:
+                    type: array
+                  items:
+                    type: object
+                    properties:
+                      status_code:
+                        type: integer
+                        format: int32
+                      location:
+                        type: string
+        '400':
+          description: Invalid URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+security:
+  - APIKey: []
+  - ClientSideJWT: []
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+  securitySchemes:
+    APIKey:
+      type: apiKey
+      name: Authorization
+      in: header
+    ClientSideJWT:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
